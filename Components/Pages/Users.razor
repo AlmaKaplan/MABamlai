@@ -1,0 +1,144 @@
+﻿@page "/users"
+@rendermode InteractiveServer
+@using MABamlai.Model
+@using MABamlai.Services
+@inject DatabaseService dbService
+<h3>System Users Management</h3>
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div style="color: #ff4a4a; font-weight: bold; padding: 10px; background: rgba(255,74,74,0.1); border-radius: 4px; margin-bottom: 15px;">
+        @errorMessage
+    </div>
+}
+@if (users == null)
+{
+    <p>Loading users data...</p>
+}
+else if (users.Count == 0)
+{
+    <p>No users found in the system.</p>
+}
+else
+{
+    <table border="1" style="width: 100%; border-collapse: collapse; background-color: #1e1e24; color: white; border: 1px solid #444; text-align: left;">
+        <thead>
+            <tr style="background-color: #2a2a35; height: 40px;">
+                <th style="padding: 10px;">UserID</th>
+                <th style="padding: 10px;">Full Name</th>
+                <th style="padding: 10px;">User Name</th>
+                <th style="padding: 10px;">Role</th>
+                <th style="padding: 10px; text-align: center;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (User user in users)
+            {
+                @if (user != null)
+                {
+                    <tr style="border-bottom: 1px solid #333; height: 50px;">
+                        <td style="padding: 10px;">@user.GetId()</td>
+                        @if (editingId == user.GetId())
+                        {
+                            <td style="padding: 10px;"><input @bind="editFullName" style="width:100%; background:#2a2a35; color:white; border:1px solid #555; padding:4px;" /></td>
+                            <td style="padding: 10px;"><input @bind="editUserName" style="width:100%; background:#2a2a35; color:white; border:1px solid #555; padding:4px;" /></td>
+                            <td style="padding: 10px;">
+                                <select @bind="editRole" style="background:#2a2a35; color:white; border:1px solid #555; padding:4px;">
+                                    <option value="0">Member</option>
+                                    <option value="1">Team Lead</option>
+                                </select>
+                            </td>
+                            <td style="padding: 10px; text-align: center;">
+                                <button @onclick="SaveEdit" style="background-color: #4caf50; color: white; padding: 6px 12px; font-size: 13px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px;">
+                                    Save
+                                </button>
+                                <button @onclick="CancelEdit" style="background-color: #888; color: white; padding: 6px 12px; font-size: 13px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">
+                                    Cancel
+                                </button>
+                            </td>
+                        }
+                        else
+                        {
+                            <td style="padding: 10px; font-weight: bold;">@user.GetFullName()</td>
+                            <td style="padding: 10px;">@user.GetUserName()</td>
+                            <td style="padding: 10px;">@(user.GetRole() ? "Team Lead" : "Member")</td>
+                            <td style="padding: 10px; text-align: center;">
+                                <button @onclick="() => StartEdit(user)" style="background-color: #1976d2; color: white; padding: 6px 12px; font-size: 13px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer; margin-right: 5px;">
+                                    Edit
+                                </button>
+                                <button @onclick="() => DeleteUser(user.GetId())" style="background-color: #ff4a4a; color: white; padding: 6px 12px; font-size: 13px; font-weight: bold; border: none; border-radius: 4px; cursor: pointer;">
+                                    Delete
+                                </button>
+                            </td>
+                        }
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}
+@code {
+    private List<User>? users;
+    private string errorMessage = string.Empty;
+    private int? editingId;
+    private string editFullName = "";
+    private string editUserName = "";
+    private string editPassword = "";
+    private int editRole = 0;
+    protected override void OnInitialized()
+    {
+        RefreshData();
+    }
+    private void RefreshData()
+    {
+        errorMessage = string.Empty;
+        try
+        {
+            users = dbService.GetAllUsers();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading from DB: {ex.Message}";
+        }
+    }
+    private void DeleteUser(int id)
+    {
+        try
+        {
+            bool success = dbService.DeleteUser(id);
+            if (!success)
+                errorMessage = "Could not delete user. ID not found.";
+            else
+                RefreshData();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error deleting user: {ex.Message}";
+        }
+    }
+    private void StartEdit(User user)
+    {
+        editingId = user.GetId();
+        editFullName = user.GetFullName();
+        editUserName = user.GetUserName();
+        editPassword = user.GetPassword();
+        editRole = user.GetRole() ? 1 : 0;
+    }
+    private void SaveEdit()
+    {
+        if (!editingId.HasValue) return;
+        try
+        {
+            dbService.UpdateUser(editingId.Value, editFullName, editUserName, editPassword, editRole);
+            editingId = null;
+            RefreshData();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error updating user: {ex.Message}";
+        }
+    }
+    private void CancelEdit()
+    {
+        editingId = null;
+    }
+}

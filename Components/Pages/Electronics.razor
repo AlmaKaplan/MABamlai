@@ -1,0 +1,84 @@
+@page "/electronics"
+@using MABamlai.Model
+@inject MABamlai.Services.DatabaseService DatabaseService
+
+<PageTitle>Electronics Components</PageTitle>
+
+<div class="electronics-page">
+    <div class="page-shell">
+        <div class="header-row">
+            <h1>Electronics Components</h1>
+            <div class="header-actions">
+                <a class="add-link" href="/electronics/add">Add New Component</a>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(loadError))
+        {
+            <div class="error-box">
+                <p>@loadError</p>
+            </div>
+        }
+        else if (componentItems.Count == 0)
+        {
+            <div class="empty-box">
+                <p>No components found in the database.</p>
+            </div>
+        }
+        else
+        {
+            <div class="component-grid">
+                @for (int i = 0; i < componentItems.Count; i++)
+                {
+                    var currentItem = componentItems[i];
+                    var currentProduct = currentItem.Product;
+
+                    <a class="component-card" href="@currentItem.DetailsUrl">
+                        <div class="card-content">
+                            <h3 class="card-title">@currentProduct.GetProductName()</h3>
+                        </div>
+                    </a>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private List<ComponentListItem> componentItems = new List<ComponentListItem>();
+
+    private string loadError = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        try
+        {
+            List<Product> databaseProducts = DatabaseService.GetAllProducts();
+
+            for (int i = 0; i < databaseProducts.Count; i++)
+            {
+                Product product = databaseProducts[i];
+                componentItems.Add(new ComponentListItem(product, $"/electronics/details/{product.GetId()}"));
+            }
+
+
+            
+        }
+        catch (Exception ex)
+        {
+            loadError = $"Could not load components: {ex.Message}";
+        }
+    }
+
+    private class ComponentListItem
+    {
+        public Product Product { get; }
+        public string DetailsUrl { get; }
+
+        public ComponentListItem(Product product, string detailsUrl)
+        {
+            Product = product;
+            DetailsUrl = detailsUrl;
+        }
+    }
+}

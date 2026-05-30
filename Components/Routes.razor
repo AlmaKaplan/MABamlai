@@ -1,0 +1,17 @@
+<Router AppAssembly="typeof(Program).Assembly">
+    <Found Context="routeData">
+        <ErrorBoundary>
+            <ChildContent>
+                <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+                <FocusOnNavigate RouteData="routeData" Selector="h1" />
+            </ChildContent>
+            <ErrorContent>
+                <LayoutView Layout="typeof(Layout.MainLayout)">
+                    <div class="alert alert-danger m-3">
+                        A page error occurred. Please reload this page.
+                    </div>
+                </LayoutView>
+            </ErrorContent>
+        </ErrorBoundary>
+    </Found>
+</Router>

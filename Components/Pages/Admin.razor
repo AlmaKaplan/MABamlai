@@ -1,0 +1,173 @@
+﻿@page "/admin"
+@rendermode InteractiveServer
+@using MABamlai.Model
+@using MABamlai.Services
+@inject DatabaseService dbService
+@inject NavigationManager Navigation
+<PageTitle>Admin Page</PageTitle>
+<div class="admin-page">
+    <div class="page-shell">
+        <div class="top-row">
+            <div>
+                <h1>Admin Page</h1>
+                <p>View all users and all missing equipment reports.</p>
+            </div>
+            <a href="/missing-equipment/add" class="add-link">Add Missing Equipment</a>
+        </div>
+        <div class="grid">
+            <section class="panel">
+                <h2>All Users</h2>
+                @if (!string.IsNullOrWhiteSpace(usersError))
+                {
+                    <div class="empty-box" style="color: #ff4a4a; font-weight: bold; padding: 10px;">@usersError</div>
+                }
+                else if (users == null)
+                {
+                    <div class="empty-box">Loading users...</div>
+                }
+                else if (users.Count == 0)
+                {
+                    <div class="empty-box">No users found.</div>
+                }
+                else
+                {
+                    <div class="list">
+                        @foreach (User user in users)
+                        {
+                            @if (user != null)
+                            {
+                                <div class="item" style="border: 1px solid #444; padding: 15px; margin-bottom: 12px; background-color: #222; border-radius: 6px;">
+                                    @if (editingId == user.GetId())
+                                    {
+                                        <div style="margin-bottom: 8px;">
+                                            <input @bind="editFullName" placeholder="Full Name" style="width:100%; margin-bottom:6px; background:#2a2a35; color:white; border:1px solid #555; padding:6px; border-radius:4px;" />
+                                            <input @bind="editUserName" placeholder="Username" style="width:100%; margin-bottom:6px; background:#2a2a35; color:white; border:1px solid #555; padding:6px; border-radius:4px;" />
+                                            <input @bind="editPassword" placeholder="Password" style="width:100%; margin-bottom:6px; background:#2a2a35; color:white; border:1px solid #555; padding:6px; border-radius:4px;" />
+                                            <select @bind="editRole" style="width:100%; margin-bottom:6px; background:#2a2a35; color:white; border:1px solid #555; padding:6px; border-radius:4px;">
+                                                <option value="0">Member</option>
+                                                <option value="1">Team Lead</option>
+                                            </select>
+                                        </div>
+                                        <button @onclick="SaveEdit" style="background-color:#4caf50; color:white; padding:6px 12px; font-size:13px; font-weight:bold; border:none; border-radius:4px; cursor:pointer; margin-right:6px;">
+                                            Save
+                                        </button>
+                                        <button @onclick="CancelEdit" style="background-color:#888; color:white; padding:6px 12px; font-size:13px; font-weight:bold; border:none; border-radius:4px; cursor:pointer;">
+                                            Cancel
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button @onclick="() => HandleDeleteUser(user.GetId())"
+                                                style="background-color:#ff4a4a; color:white; padding:6px 12px; font-size:13px; font-weight:bold; border:none; border-radius:4px; float:right; margin-left:10px; cursor:pointer;">
+                                            Delete
+                                        </button>
+                                        <button @onclick="() => StartEdit(user)"
+                                                style="background-color:#1976d2; color:white; padding:6px 12px; font-size:13px; font-weight:bold; border:none; border-radius:4px; float:right; cursor:pointer;">
+                                            Edit
+                                        </button>
+                                        <div style="font-weight:bold; font-size:16px; color:white; margin-bottom:5px;">@user.GetFullName()</div>
+                                        <div style="color:#aaa; font-size:13px;">ID: @user.GetId()</div>
+                                        <div style="color:#aaa; font-size:13px;">Username: @user.GetUserName()</div>
+                                        <div style="color:#aaa; font-size:13px;">Role: @(user.GetRole() ? "Team Lead" : "Member")</div>
+                                        <div style="clear:both;"></div>
+                                    }
+                                </div>
+                            }
+                        }
+                    </div>
+                }
+            </section>
+            <section class="panel">
+                <h2>Missing Equipment Reports</h2>
+                <div class="list">
+                    @if (reports == null || reports.Count == 0)
+                    {
+                        <div class="empty-box">No missing equipment reports yet.</div>
+                    }
+                    else
+                    {
+                        @foreach (MissingEquipment report in reports)
+                        {
+                            @if (report != null)
+                            {
+                                <div class="item">
+                                    <div class="title">@(string.IsNullOrWhiteSpace(report.GetProductName()) ? "Unknown Item" : report.GetProductName())</div>
+                                    <div class="meta">Category: @report.GetCategory()</div>
+                                    <div class="meta">Quantity needed: @report.GetAmuont()</div>
+                                </div>
+                            }
+                        }
+                    }
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+@code {
+    private List<User> users = new();
+    private List<MissingEquipment> reports = new();
+    private string usersError = string.Empty;
+    private int? editingId;
+    private string editFullName = "";
+    private string editUserName = "";
+    private string editPassword = "";
+    private int editRole = 0;
+    protected override void OnInitialized()
+    {
+        RefreshData();
+    }
+    private void RefreshData()
+    {
+        usersError = string.Empty;
+        try
+        {
+            users = dbService.GetAllUsers();
+            reports = dbService.GetAllMissingEquipment();
+        }
+        catch (Exception ex)
+        {
+            usersError = $"Could not load data: {ex.Message}";
+        }
+    }
+    private void HandleDeleteUser(int id)
+    {
+        try
+        {
+            bool success = dbService.DeleteUser(id);
+            if (!success)
+                usersError = "Could not delete user. ID not found.";
+            else
+                RefreshData();
+        }
+        catch (Exception ex)
+        {
+            usersError = $"Error deleting user: {ex.Message}";
+        }
+    }
+    private void StartEdit(User user)
+    {
+        editingId = user.GetId();
+        editFullName = user.GetFullName();
+        editUserName = user.GetUserName();
+        editPassword = user.GetPassword();
+        editRole = user.GetRole() ? 1 : 0;
+    }
+    private void SaveEdit()
+    {
+        if (!editingId.HasValue) return;
+        try
+        {
+            dbService.UpdateUser(editingId.Value, editFullName, editUserName, editPassword, editRole);
+            editingId = null;
+            RefreshData();
+        }
+        catch (Exception ex)
+        {
+            usersError = $"Error updating user: {ex.Message}";
+        }
+    }
+    private void CancelEdit()
+    {
+        editingId = null;
+    }
+}

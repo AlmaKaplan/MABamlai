@@ -1,0 +1,120 @@
+﻿@rendermode InteractiveServer
+@using MABamlai.Services
+@inject UserService userService
+@inject NavigationManager navManager
+@implements IDisposable
+
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="">MA Bamlai</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column">
+        <div class="nav-main">
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="electronics">
+                    <span class="bi bi-cpu" aria-hidden="true" style="margin-right: 8px;"></span> Electronics
+                </NavLink>
+            </div>
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="gallery">
+                    <span class="bi bi-images" aria-hidden="true" style="margin-right: 8px;"></span> Gallery
+                </NavLink>
+            </div>
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="electronics/add">
+                    <span class="bi bi-plus-circle" aria-hidden="true" style="margin-right: 8px;"></span> Add Component
+                </NavLink>
+            </div>
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="missing-equipment/add">
+                    <span class="bi bi-clipboard2-plus" aria-hidden="true" style="margin-right: 8px;"></span> Missing Equipment
+                </NavLink>
+            </div>
+
+            @* מציג את כפתור הניהול רק אם המשתמש מחובר והוא אדמין (role הוא בוליאני) *@
+            @if (userService.IsUserLoggedIn() && userService.GetUser() != null && userService.GetUser().GetRole())
+            {
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="admin">
+                        <span class="bi bi-speedometer2" aria-hidden="true" style="margin-right: 8px;"></span> Admin
+                    </NavLink>
+                </div>
+            }
+
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="about">
+                    <span class="bi bi-info-circle" aria-hidden="true" style="margin-right: 8px;"></span> About
+                </NavLink>
+            </div>
+        </div>
+
+        @* אזור סטטוס המשתמש בתחתית התפריט *@
+        <div class="mt-4 px-3">
+            @if (userService.IsUserLoggedIn())
+            {
+                <div class="alert alert-success p-2 text-center" style="font-size: 0.85rem; border-radius: 6px;">
+                    Hello, <strong>@userService.GetUser().GetFullName()</strong>!
+                </div>
+                <div class="nav-item">
+                    <button class="nav-link btn btn-link w-100 text-start border-0" @onclick="HandleLogout" style="color: #ff6b6b;">
+                        <span class="bi bi-box-arrow-right" aria-hidden="true" style="margin-right: 8px;"></span> Sign Out
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-secondary p-2 text-center" style="font-size: 0.85rem; border-radius: 6px;">
+                    Welcome, Guest!
+                    <br />
+                    <a href="/login" class="btn btn-success btn-sm mt-2 w-100">Go to Login</a>
+                </div>
+            }
+        </div>
+    </nav>
+</div>
+
+@code {
+    private bool hasTriedRestoreFromStorage;
+
+    protected override void OnInitialized()
+    {
+        // 1. רישום לאירוע המקורי של ה-Service שלך
+        userService.OnNotify += RefreshUI;
+
+        // 2. רישום לאירוע שינוי כתובת URL (קורה בכל מעבר דף, כולל אחרי התחברות!)
+        navManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        // ברגע שהעמוד משתנה ל-/electronics, ה-NavMenu יתרענן ויקרא את המשתמש המעודכן
+        RefreshUI();
+    }
+
+    private void RefreshUI()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task HandleLogout()
+    {
+        userService.Logout();
+
+        navManager.NavigateTo("/");
+    }
+
+    public void Dispose()
+    {
+        // הסרת רישום של שני האירועים כדי למנוע זליגת זיכרון
+        userService.OnNotify -= RefreshUI;
+        navManager.LocationChanged -= OnLocationChanged;
+    }
+}

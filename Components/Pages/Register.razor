@@ -1,0 +1,84 @@
+@page "/register"
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@layout MABamlai.Components.Layout.EmptyLayout
+@inject NavigationManager Navigation
+@inject DatabaseService dbService
+
+
+<PageTitle>Register - MA Bamlai</PageTitle>
+
+<div class="register-page">
+    <div class="register-card">
+        <div class="title-wrap">
+            <h1><span class="accent">MA</span> REGISTER</h1>
+            <p>Create a new account to access the system</p>
+        </div>
+
+        <EditForm FormName="register-form" Model="@registerModel" OnValidSubmit="HandleRegister">
+            <DataAnnotationsValidator />
+
+            <div class="field">
+                <label for="username">Username</label>
+                <InputText id="username" class="input" @bind-Value="registerModel.Username" />
+                <ValidationMessage For="@(() => registerModel.Username)" />
+            </div>
+
+            <div class="field">
+                <label for="password">Password</label>
+                <InputText id="password" class="input" type="password" @bind-Value="registerModel.Password" />
+                <ValidationMessage For="@(() => registerModel.Password)" />
+            </div>
+
+            <div class="field">
+                <label for="confirmPassword">Confirm Password</label>
+                <InputText id="confirmPassword" class="input" type="password" @bind-Value="registerModel.ConfirmPassword" />
+                <ValidationMessage For="@(() => registerModel.ConfirmPassword)" />
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(registerError))
+            {
+                <div class="register-error">@registerError</div>
+            }
+
+            <button class="register-button" type="submit">Create Account</button>
+        </EditForm>
+
+        <a href="/login" class="login-link">Already have an account? Sign in</a>
+        <a href="/" class="back-link">Back to Home</a>
+    </div>
+</div>
+
+@code {
+    private readonly RegisterModel registerModel = new();
+    private string registerError = string.Empty;
+
+    private void HandleRegister()
+    {
+        registerError = string.Empty;
+        string errorMessage;
+
+        if (!dbService.Register(registerModel.Username, registerModel.Password, out errorMessage))
+        {
+            registerError = errorMessage;
+            return;
+        }
+
+        Navigation.NavigateTo("/login");
+    }
+
+    private sealed class RegisterModel
+    {
+        [Required(ErrorMessage = "Please enter a username.")]
+        [MinLength(3, ErrorMessage = "Username must be at least 3 characters.")]
+        public string Username { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Please enter a password.")]
+        [MinLength(6, ErrorMessage = "Password must be at least 6 characters.")]
+        public string Password { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Please confirm your password.")]
+        [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
+        public string ConfirmPassword { get; set; } = string.Empty;
+    }
+}

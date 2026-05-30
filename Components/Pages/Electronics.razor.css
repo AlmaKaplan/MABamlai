@@ -1,0 +1,116 @@
+.electronics-page {
+
+    padding: 2rem 1rem;
+    background: radial-gradient(circle at top left, #2f3346 0%, #171922 62%, #11131a 100%);
+    border-radius: 10px;
+    color: #f4f4f4;
+}
+
+.page-shell {
+    width: min(1100px, 100%);
+    margin: 0 auto;
+}
+
+.header-row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+}
+
+.header-row h1 {
+    margin: 0;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+}
+
+.header-row p {
+    margin-top: 0.5rem;
+    color: #d0d0d0;
+}
+
+.add-link {
+    text-decoration: none;
+    color: #fff;
+    background: #9e0b0b;
+    border: 1px solid #c73a3a;
+    padding: 0.65rem 1rem;
+    border-radius: 0.55rem;
+    font-weight: 600;
+}
+
+.add-link:hover {
+    filter: brightness(1.08);
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+}
+
+.missing-link {
+    text-decoration: none;
+    color: #ffdede;
+    background: rgba(158, 11, 11, 0.2);
+    border: 1px solid rgba(199, 58, 58, 0.8);
+    padding: 0.65rem 1rem;
+    border-radius: 0.55rem;
+    font-weight: 600;
+}
+
+.missing-link:hover {
+    background: rgba(158, 11, 11, 0.35);
+}
+
+.component-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 0.9rem;
+}
+
+.component-card {
+    display: block;
+    padding: 1rem;
+    border-radius: 0.8rem;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(12, 14, 21, 0.72);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.component-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(199, 58, 58, 0.9);
+}
+
+.card-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.45rem;
+}
+
+.card-meta {
+    color: #d0d0d0;
+    font-size: 0.92rem;
+    margin-bottom: 0.3rem;
+}
+
+.location-pill {
+    margin-top: 0.55rem;
+    display: inline-block;
+    border: 1px solid rgba(199, 58, 58, 0.7);
+    border-radius: 999px;
+    padding: 0.25rem 0.65rem;
+    font-size: 0.8rem;
+    color: #ffdede;
+}
+
+.empty-box {
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 0.8rem;
+    padding: 1.5rem;
+    color: #cfcfcf;
+}

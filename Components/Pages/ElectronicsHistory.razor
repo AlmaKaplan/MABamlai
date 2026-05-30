@@ -1,0 +1,122 @@
+@page "/electronics/details/{ComponentId:int}"
+@page "/electronics/{ComponentId:int}/history"
+@using MABamlai.Model
+@inject MABamlai.Services.DatabaseService DatabaseService
+
+<PageTitle>Component History</PageTitle>
+
+<div class="history-page">
+    <div class="page-shell">
+        @if (!string.IsNullOrWhiteSpace(loadError))
+        {
+            <div class="error-box">
+                <h2>Error</h2>
+                <p>@loadError</p>
+                <a href="/electronics" class="back-link">Back to Components</a>
+            </div>
+        }
+        else if (component is null)
+        {
+            <div class="not-found">
+                <h2>Not Found</h2>
+                <p>Component #@ComponentId does not exist.</p>
+                <a href="/electronics" class="back-link">Back to Components</a>
+            </div>
+        }
+        else
+        {
+            <div class="top-row">
+                <div>
+                    <h1>@component.GetProductName()</h1>
+                    <p>ID: @component.GetId()</p>
+                </div>
+                <a href="/electronics" class="back-link">Back to Components</a>
+            </div>
+
+            <div class="details-section">
+                <h2>Details</h2>
+                <p><strong>Category:</strong> @component.GetCategory()</p>
+                <p><strong>Quantity:</strong> @component.Getamuont()</p>
+            </div>
+            <div class="history-section">
+                <h2>locetion</h2>
+                
+                
+                    <div class="history-item">
+                        <p>@component.GetHistory()</p>
+                    </div>
+                
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int ComponentId { get; set; }
+
+    [SupplyParameterFromQuery(Name = "source")]
+    public string? Source { get; set; }
+
+    [SupplyParameterFromQuery(Name = "tempIndex")]
+    public int? TempIndex { get; set; }
+
+    private Product? component;
+    private string loadError = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        loadError = string.Empty;
+        component = null;
+
+        try
+        {
+            List<Product> temporaryProducts = DatabaseService.GetAllProducts();
+            bool isTemporaryRequest = string.Equals(Source, "temp", StringComparison.OrdinalIgnoreCase);
+
+            if (isTemporaryRequest)
+            {
+                if (TempIndex.HasValue && TempIndex.Value >= 0 && TempIndex.Value < temporaryProducts.Count)
+                {
+                    component = temporaryProducts[TempIndex.Value];
+                }
+                else
+                {
+                    for (int i = 0; i < temporaryProducts.Count; i++)
+                    {
+                        if (temporaryProducts[i].GetId() == ComponentId)
+                        {
+                            component = temporaryProducts[i];
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                component = DatabaseService.GetProductFromId(ComponentId);
+            }
+
+            if (component is null)
+            {
+                for (int i = 0; i < temporaryProducts.Count; i++)
+                {
+                    if (temporaryProducts[i].GetId() == ComponentId)
+                    {
+                        component = temporaryProducts[i];
+                        break;
+                    }
+                }
+
+                if (component is null)
+                {
+                    component = DatabaseService.GetProductFromId(ComponentId);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            loadError = ex.Message;
+        }
+    }
+}

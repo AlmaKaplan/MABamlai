@@ -1,0 +1,111 @@
+﻿@page "/login"
+@using MABamlai.Model
+@using MABamlai.Services
+@layout MABamlai.Components.Layout.EmptyLayout
+@inject DatabaseService dbService
+@inject UserService userService
+@inject NavigationManager navManager
+
+@rendermode InteractiveServer
+
+<PageTitle>Login - MA Bamlai</PageTitle>
+
+<div class="login-page">
+    <div class="login-card">
+        <div class="title-wrap">
+            <h1><span class="accent">MA</span> LOGIN</h1>
+            <p>Sign in to the equipment management system</p>
+        </div>
+
+        <div class="field">
+            <label for="username">Username</label>
+            <input id="username" type="text" class="input" @bind="userNameInput" />
+        </div>
+
+        <div class="field">
+            <label for="password">Password</label>
+            <input id="password" type="password" class="input" @bind="passwordInput" />
+        </div>
+
+        <button class="login-button" @onclick="HandleLogin">Sign In</button>
+
+        @if (!string.IsNullOrEmpty(statusMessage))
+        {
+            <div class="@statusClass">
+                @statusMessage
+            </div>
+        }
+
+        <a href="/register" class="register-link">Need an account? Register</a>
+        <br />
+        <a href="/" class="back-link">Back to Home</a>
+    </div>
+</div>
+
+@code {
+    private string userNameInput = "";
+    private string passwordInput = "";
+    private string statusMessage = "";
+    private string statusClass = "";
+    private bool hasTriedAutoRestore;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || hasTriedAutoRestore)
+        {
+            return;
+        }
+
+        hasTriedAutoRestore = true;
+
+        
+    }
+
+    private async Task HandleLogin()
+    {
+        statusMessage = "";
+
+        if (string.IsNullOrWhiteSpace(userNameInput) || string.IsNullOrWhiteSpace(passwordInput))
+        {
+            statusMessage = "Please enter both username and password.";
+            statusClass = "login-warning";
+            return;
+        }
+
+        try
+        {
+            string normalizedUserName = userNameInput.Trim();
+            string normalizedPassword = passwordInput.Trim();
+            User? user = dbService.CanLogIn(normalizedUserName, normalizedPassword);
+
+            if (user == null && dbService.ValidateCredentials(normalizedUserName, normalizedPassword))
+            {
+                user = new User(0, normalizedUserName, normalizedUserName, string.Empty, 0);
+            }
+
+            if (user != null)
+            {
+                userService.SetUser(user);
+
+                
+
+                statusMessage = $"Signed in successfully. Welcome, {user.GetFullName()}!";
+                statusClass = "login-success";
+
+                await Task.Delay(1000);
+
+                navManager.NavigateTo("/electronics");
+            }
+            else
+            {
+                statusMessage = "Invalid username or password.";
+                statusClass = "login-error";
+            }
+        }
+        catch (Exception ex)
+        {
+            statusMessage = "Login error: " + ex.Message;
+            statusClass = "login-error";
+        }
+    }
+}

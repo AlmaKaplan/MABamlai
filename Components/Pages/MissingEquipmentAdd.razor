@@ -1,0 +1,95 @@
+@page "/missing-equipment/add"
+@rendermode InteractiveServer
+@using System.ComponentModel.DataAnnotations
+@using MABamlai.Model
+@using MABamlai.Services
+@inject DatabaseService DB
+
+<PageTitle>Add Missing Equipment</PageTitle>
+
+<div class="missing-page">
+    <div class="page-shell">
+        <h1>Add Missing Equipment</h1>
+        <p>Report equipment that the team needed but did not have.</p>
+
+        <EditForm FormName="add-missing-item-form" Model="@missingItem" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+
+            <div class="field">
+                <label for="txtItemName">Equipment Name</label>
+                <InputText id="txtItemName" class="input" @bind-Value="missingItem.Name" />
+                <ValidationMessage For="@(() => missingItem.Name)" />
+            </div>
+
+            <div class="field">
+                <label for="txtItemCategory">Category</label>
+                <InputText id="txtItemCategory" class="input" @bind-Value="missingItem.Category" />
+                <ValidationMessage For="@(() => missingItem.Category)" />
+            </div>
+
+            <div class="field">
+                <label for="numItemQuantity">Quantity Needed</label>
+                <InputNumber id="numItemQuantity" class="input" @bind-Value="missingItem.Amount" />
+                <ValidationMessage For="@(() => missingItem.Amount)" />
+            </div>
+
+            <button class="submit-btn" type="submit">Add Missing Equipment</button>
+        </EditForm>
+
+        @if (!string.IsNullOrWhiteSpace(errorMessage))
+        {
+            <div class="empty-box">@errorMessage</div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(successMessage))
+        {
+            <div class="success-box">@successMessage</div>
+        }
+    </div>
+</div>
+
+@code {
+    private MissingFormModel missingItem = new MissingFormModel();
+    private string successMessage = string.Empty;
+    private string errorMessage = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        missingItem = new MissingFormModel();
+    }
+
+    private void HandleSubmit()
+    {
+        errorMessage = string.Empty;
+        successMessage = string.Empty;
+
+        if (missingItem.Amount <= 0)
+        {
+            errorMessage = "Quantity must be at least 1.";
+            return;
+        }
+
+        try
+        {
+            DB.AddMissingEquipment(missingItem.Name, missingItem.Category, missingItem.Amount);
+            successMessage = "Missing equipment was added.";
+            missingItem = new MissingFormModel();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Could not add report: {ex.Message}";
+        }
+    }
+
+    public class MissingFormModel
+    {
+        [Required(ErrorMessage = "Equipment name is required.")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Category is required.")]
+        public string Category { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Quantity is required.")]
+        public int Amount { get; set; } = 1;
+    }
+}

@@ -1,0 +1,87 @@
+@page "/gallery"
+@inject IWebHostEnvironment Env
+
+<PageTitle>Electronics Gallery</PageTitle>
+
+<div class="gallery-page">
+    <div class="page-shell">
+        <h1>Electronics Gallery</h1>
+        <p>Core components used by the electronics team.</p>
+
+        @if (images.Count == 0)
+        {
+            <p>No gallery images found in `wwwroot/images/gallery`.</p>
+        }
+        else
+        {
+            <div class="gallery-grid">
+                @foreach (var image in images)
+                {
+                    <article class="gallery-card">
+                        <img src="@image.Url" alt="@image.Title" />
+                        <h2>@image.Title</h2>
+                    </article>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private readonly List<GalleryImageItem> images = new();
+
+    protected override void OnInitialized()
+    {
+        string folder = Path.Combine(Env.WebRootPath, "images", "gallery");
+        if (!Directory.Exists(folder))
+        {
+            return;
+        }
+
+        string[] allowedExt = [".png", ".jpg", ".jpeg", ".webp", ".svg"];
+
+        foreach (var file in Directory.GetFiles(folder))
+        {
+            string ext = Path.GetExtension(file).ToLowerInvariant();
+            if (!allowedExt.Contains(ext))
+            {
+                continue;
+            }
+
+            string fileName = Path.GetFileName(file);
+            images.Add(new GalleryImageItem
+            {
+                Url = $"/images/gallery/{fileName}",
+                Title = FormatTitle(Path.GetFileNameWithoutExtension(fileName))
+            });
+        }
+
+        images.Sort((a, b) => string.Compare(a.Title, b.Title, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string FormatTitle(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return "Component";
+        }
+
+        string[] words = value
+            .Replace('-', ' ')
+            .Replace('_', ' ')
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        for (int i = 0; i < words.Length; i++)
+        {
+            words[i] = char.ToUpper(words[i][0]) + words[i][1..];
+        }
+
+        return string.Join(' ', words);
+    }
+
+    private sealed class GalleryImageItem
+    {
+        public string Url { get; set; } = string.Empty;
+        public string Title { get; set; } = string.Empty;
+    }
+}

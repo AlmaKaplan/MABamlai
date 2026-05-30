@@ -1,0 +1,68 @@
+.about-page[b-101giyniom] {
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    background: radial-gradient(circle at center, #2e2f3e 0%, #1d1e27 100%);
+    border-radius: 10px;
+    color: #f1f1f1;
+}
+
+.about-shell[b-101giyniom] {
+    width: min(820px, 100%);
+    text-align: center;
+    border: 1px solid rgba(153, 0, 0, 0.35);
+    border-radius: 1rem;
+    background: rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(10px);
+    padding: 2rem;
+}
+
+.team-logo[b-101giyniom] {
+    width: min(300px, 80vw);
+    height: auto;
+    display: block;
+    margin: 0 auto 1.2rem;
+}
+
+h1[b-101giyniom] {
+    margin: 0;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+}
+
+p[b-101giyniom] {
+    margin: 1rem auto 0;
+    max-width: 650px;
+    color: #d4d4d4;
+    line-height: 1.7;
+    font-size: 1.05rem;
+}
+
+.actions[b-101giyniom] {
+    margin-top: 1.4rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.back-link[b-101giyniom],
+.go-link[b-101giyniom] {
+    display: inline-block;
+    text-decoration: none;
+    color: #fff;
+    border: 1px solid #b80c0c;
+    border-radius: 0.55rem;
+    padding: 0.65rem 1rem;
+    font-weight: 600;
+}
+
+.go-link[b-101giyniom] {
+    background: #9e0b0b;
+}
+
+.back-link:hover[b-101giyniom],
+.go-link:hover[b-101giyniom] {
+    filter: brightness(1.08);
+}
