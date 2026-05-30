@@ -122,3 +122,4 @@ C:\Users\almak\Documents\computer science\MABamlai\MABamlai\obj\Debug\net9.0\ref
 C:\Users\almak\Documents\computer science\MABamlai\MABamlai\obj\Debug\net9.0\MABamlai.pdb
 C:\Users\almak\Documents\computer science\MABamlai\MABamlai\obj\Debug\net9.0\MABamlai.genruntimeconfig.cache
 C:\Users\almak\Documents\computer science\MABamlai\MABamlai\obj\Debug\net9.0\ref\MABamlai.dll
+C:\Users\almak\Documents\computer science\MABamlai\MABamlai\obj\Debug\net9.0\MABamlai.sourcelink.json

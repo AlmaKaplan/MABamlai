@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MABamlai")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8b5d73aed989ffb38ccdebc672e105a4253f96d6")]
 [assembly: System.Reflection.AssemblyProductAttribute("MABamlai")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MABamlai")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

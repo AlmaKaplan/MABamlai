@@ -184,5 +184,19 @@ namespace MABamlai.Services
             command.Parameters.AddWithValue("$id", id);
             return command.ExecuteNonQuery() > 0;
         }
+
+        public bool AddProduct(string productName, string category, int amount, string history, int id)
+        {
+            using SqliteConnection connection = new SqliteConnection(_connectionString);
+            connection.Open();
+            SqliteCommand command = connection.CreateCommand();
+            command.CommandText = "INSERT INTO Products (ID, ProductName, Category, Amount, History) VALUES ($id, $name, $cate, $amount, $history)";
+            command.Parameters.AddWithValue("$id", id);
+            command.Parameters.AddWithValue("$name", productName);
+            command.Parameters.AddWithValue("$cate", category);
+            command.Parameters.AddWithValue("$amount", amount);
+            command.Parameters.AddWithValue("$history", history);
+            return command.ExecuteNonQuery() > 0;
+        }
     }
 }
