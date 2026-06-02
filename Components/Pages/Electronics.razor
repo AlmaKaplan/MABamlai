@@ -1,4 +1,4 @@
-@page "/electronics"
+﻿@page "/electronics"
 @using MABamlai.Model
 @inject MABamlai.Services.DatabaseService DatabaseService
 
@@ -13,12 +13,14 @@
             </div>
         </div>
 
-        @if (!string.IsNullOrWhiteSpace(loadError))
+
+        @if (!string.IsNullOrWhiteSpace(loadError)) // אם הייתה שגיאה בטעינת הנתונים
         {
             <div class="error-box">
                 <p>@loadError</p>
             </div>
         }
+        // אם רשימת המוצרים ריקה
         else if (componentItems.Count == 0)
         {
             <div class="empty-box">
@@ -28,11 +30,13 @@
         else
         {
             <div class="component-grid">
-                @for (int i = 0; i < componentItems.Count; i++)
-                {
-                    var currentItem = componentItems[i];
-                    var currentProduct = currentItem.Product;
 
+                @for (int i = 0; i < componentItems.Count; i++) // לולאה שעוברת על כל המוצרים ומציגה אותם בכרטיסים
+                {
+                    ComponentListItem currentItem = componentItems[i];
+                    Product currentProduct = currentItem.Product;
+
+                    // כרטיס לכל מוצר שלחיצה עליו מובילה לדף הפרטים שלו
                     <a class="component-card" href="@currentItem.DetailsUrl">
                         <div class="card-content">
                             <h3 class="card-title">@currentProduct.GetProductName()</h3>
@@ -45,31 +49,35 @@
 </div>
 
 @code {
+    // רשימה שמחזיקה את המוצרים יחד עם הקישור לדף הפרטים שלהם
     private List<ComponentListItem> componentItems = new List<ComponentListItem>();
 
     private string loadError = string.Empty;
 
+    // רץ אוטומטית כשהדף עולה
     protected override void OnInitialized()
     {
         try
         {
+            // משיכת כל המוצרים מהדאתא בייס
             List<Product> databaseProducts = DatabaseService.GetAllProducts();
 
+            // מעבר על המוצרים שחזרו ובניית הרשימה של המסך
             for (int i = 0; i < databaseProducts.Count; i++)
             {
                 Product product = databaseProducts[i];
+                // הוספת המוצר ויצירת הכתובת לפרטים שלו לפי ה-ID
                 componentItems.Add(new ComponentListItem(product, $"/electronics/details/{product.GetId()}"));
             }
-
-
-            
         }
         catch (Exception ex)
         {
+            // תפיסת שגיאה אם משהו נכשל בטעינה מהדאתא בייס
             loadError = $"Could not load components: {ex.Message}";
         }
     }
 
+    // קלאס עזר פנימי שמחבר בין המוצר לקישור שלו
     private class ComponentListItem
     {
         public Product Product { get; }

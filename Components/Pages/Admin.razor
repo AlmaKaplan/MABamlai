@@ -4,7 +4,9 @@
 @using MABamlai.Services
 @inject DatabaseService dbService
 @inject NavigationManager Navigation
+
 <PageTitle>Admin Page</PageTitle>
+
 <div class="admin-page">
     <div class="page-shell">
         <div class="top-row">
@@ -12,19 +14,25 @@
                 <h1>Admin Page</h1>
                 <p>View all users and all missing equipment reports.</p>
             </div>
+            // כפתור שמעביר למסך הוספת ציוד חסר
             <a href="/missing-equipment/add" class="add-link">Add Missing Equipment</a>
         </div>
         <div class="grid">
+            //  ניהול משתמשים
             <section class="panel">
                 <h2>All Users</h2>
+
+                // אם יש שגיאה בטעינת משתמשים
                 @if (!string.IsNullOrWhiteSpace(usersError))
                 {
                     <div class="empty-box" style="color: #ff4a4a; font-weight: bold; padding: 10px;">@usersError</div>
                 }
+                // בזמן שהנתונים נטענים מהדאתא בייס
                 else if (users == null)
                 {
                     <div class="empty-box">Loading users...</div>
                 }
+                // אם הרשימה חזרה ריקה
                 else if (users.Count == 0)
                 {
                     <div class="empty-box">No users found.</div>
@@ -32,11 +40,14 @@
                 else
                 {
                     <div class="list">
+                        // לולאה שמציגה את כל המשתמשים
                         @foreach (User user in users)
                         {
                             @if (user != null)
                             {
                                 <div class="item" style="border: 1px solid #444; padding: 15px; margin-bottom: 12px; background-color: #222; border-radius: 6px;">
+
+                                    //  מציג שדות קלט במקום טקסט רגיל
                                     @if (editingId == user.GetId())
                                     {
                                         <div style="margin-bottom: 8px;">
@@ -54,6 +65,7 @@
                                             Cancel
                                         </button>
                                     }
+                                    //  מציג את פרטי המשתמש וכפתורי עריכה/מחיקה
                                     else
                                     {
                                         <button @onclick="() => HandleDeleteUser(user.GetId())"
@@ -76,6 +88,8 @@
                     </div>
                 }
             </section>
+
+            //  ציוד חסר
             <section class="panel">
                 <h2>Missing Equipment Reports</h2>
                 <div class="list">
@@ -85,6 +99,7 @@
                     }
                     else
                     {
+                        // לולאה שמציגה את הציוד החסר
                         @foreach (MissingEquipment report in reports)
                         {
                             @if (report != null)
@@ -102,19 +117,26 @@
         </div>
     </div>
 </div>
+
 @code {
+    //  לשמירת הרשימות מהדאתא בייס
     private List<User> users = new();
     private List<MissingEquipment> reports = new();
     private string usersError = string.Empty;
+
+    // משתני עזר בשביל לערוך משתמש ספציפי
     private int? editingId;
     private string editFullName = "";
     private string editUserName = "";
     private string editPassword = "";
     private int editRole = 0;
+
     protected override void OnInitialized()
     {
         RefreshData();
     }
+
+    // פונקציה שמושכת את הנתונים המעודכנים מהדאתא בייס
     private void RefreshData()
     {
         usersError = string.Empty;
@@ -128,6 +150,8 @@
             usersError = $"Could not load data: {ex.Message}";
         }
     }
+
+    // מחיקת משתמש לפי ה-ID שלו
     private void HandleDeleteUser(int id)
     {
         try
@@ -136,13 +160,15 @@
             if (!success)
                 usersError = "Could not delete user. ID not found.";
             else
-                RefreshData();
+                RefreshData(); // רענון הרשימה אחרי המחיקה
         }
         catch (Exception ex)
         {
             usersError = $"Error deleting user: {ex.Message}";
         }
     }
+
+    // הפעלת מצב עריכה ומילוי השדות בפרטים הקיימים של המשתמש
     private void StartEdit(User user)
     {
         editingId = user.GetId();
@@ -151,20 +177,24 @@
         editPassword = user.GetPassword();
         editRole = user.GetRole() ? 1 : 0;
     }
+
+    // שמירת הפרטים המעודכנים של המשתמש בדאתא בייס
     private void SaveEdit()
     {
         if (!editingId.HasValue) return;
         try
         {
             dbService.UpdateUser(editingId.Value, editFullName, editUserName, editPassword, editRole);
-            editingId = null;
-            RefreshData();
+            editingId = null; // יציאה ממצב עריכה
+            RefreshData(); // רענון הרשימה כדי לראות את השינויים
         }
         catch (Exception ex)
         {
             usersError = $"Error updating user: {ex.Message}";
         }
     }
+
+    // ביטול העריכה וחזרה למצב רגיל
     private void CancelEdit()
     {
         editingId = null;

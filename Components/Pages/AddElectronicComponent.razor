@@ -1,67 +1,93 @@
-@page "/electronics/add"
+﻿@page "/electronics/add"
 @rendermode InteractiveServer
 @using MABamlai.Model
 @using MABamlai.Services
 @inject DatabaseService DatabaseService
 @inject NavigationManager Navigation
+
 <PageTitle>Add Electronics Component</PageTitle>
+
 <div class="add-page">
     <div class="form-shell">
         <h1>Add New Electronics Component</h1>
+
         <div class="field">
             <label for="name">Component Name</label>
             <input id="name" class="input" @bind="savedName" />
         </div>
-        <div class="field">
-            <label for="id">ID</label>
-            <input id="id" type="number" class="input" @bind="savedID" />
-        </div>
+
         <div class="field">
             <label for="category">Category</label>
             <input id="category" class="input" @bind="savedCategory" />
         </div>
+
         <div class="field">
             <label for="amount">Amount</label>
             <input id="amount" type="number" class="input" @bind="savedAmount" />
         </div>
+
         <div class="field">
             <label for="notes">Location</label>
             <textarea id="notes" class="input notes-input" @bind="savedLocation"></textarea>
         </div>
+
         <button class="submit-btn" @onclick="HandleSubmit">Add Component</button>
+
         @if (!string.IsNullOrWhiteSpace(submitError))
         {
             <div style="color:#ff4a4a; margin-top:10px;">@submitError</div>
         }
+
         <a href="/electronics" class="back-link">Back to Components</a>
     </div>
 </div>
+
 @code {
     private string savedName = string.Empty;
     private string savedCategory = string.Empty;
     private int savedAmount = 0;
     private string savedLocation = string.Empty;
-    private int savedID = 0;
     private string submitError = string.Empty;
-    private void HandleSubmit()
+
+    public void HandleSubmit()
     {
         submitError = string.Empty;
+
+        // בדיקה שהשדות לא ריקים
         if (string.IsNullOrWhiteSpace(savedName) || string.IsNullOrWhiteSpace(savedCategory))
         {
             submitError = "Name and Category are required.";
             return;
         }
+
         try
         {
-            bool success = DatabaseService.AddProduct(savedName.Trim(), savedCategory.Trim(), savedAmount, savedLocation?.Trim() ?? string.Empty, savedID);
+            // סידור הטקסטים לפני השליחה כדי למנוע ערכים ריקים או בעייתיים
+            string nameParam = (savedName ?? "").Trim();
+            string categoryParam = (savedCategory ?? "").Trim();
+            string locationParam = (savedLocation ?? "").Trim();
+
+            // קריאה לפונקציה של הדאתא בייס
+            bool success = DatabaseService.AddProduct(
+                nameParam,
+                categoryParam,
+                savedAmount,
+                locationParam
+            );
+
             if (success)
+            {
                 Navigation.NavigateTo("/electronics");
+            }
             else
-                submitError = "Could not save to database.";
+            {
+                submitError = "Could not save to database. Check if data format is correct.";
+            }
         }
         catch (Exception ex)
         {
-            submitError = $"Error: {ex.Message}";
+            // אם הדאתא בייס זרק שגיאה, נתפוס אותה פה והדף לא יתרסק
+            submitError = $"Database Error: {ex.Message}";
         }
     }
 }
