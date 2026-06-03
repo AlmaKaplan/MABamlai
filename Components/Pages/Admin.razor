@@ -14,15 +14,12 @@
                 <h1>Admin Page</h1>
                 <p>View all users and all missing equipment reports.</p>
             </div>
-            // כפתור שמעביר למסך הוספת ציוד חסר
             <a href="/missing-equipment/add" class="add-link">Add Missing Equipment</a>
         </div>
         <div class="grid">
-            //  ניהול משתמשים
             <section class="panel">
                 <h2>All Users</h2>
 
-                // אם יש שגיאה בטעינת משתמשים
                 @if (!string.IsNullOrWhiteSpace(usersError))
                 {
                     <div class="empty-box" style="color: #ff4a4a; font-weight: bold; padding: 10px;">@usersError</div>
