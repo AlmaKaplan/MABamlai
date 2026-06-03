@@ -37,14 +37,12 @@
                 else
                 {
                     <div class="list">
-                        // לולאה שמציגה את כל המשתמשים
                         @foreach (User user in users)
                         {
                             @if (user != null)
                             {
                                 <div class="item" style="border: 1px solid #444; padding: 15px; margin-bottom: 12px; background-color: #222; border-radius: 6px;">
 
-                                    //  מציג שדות קלט במקום טקסט רגיל
                                     @if (editingId == user.GetId())
                                     {
                                         <div style="margin-bottom: 8px;">
@@ -86,7 +84,6 @@
                 }
             </section>
 
-            //  ציוד חסר
             <section class="panel">
                 <h2>Missing Equipment Reports</h2>
                 <div class="list">
